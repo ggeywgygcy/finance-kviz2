@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Путешествие в страну финансовой независимости — пульт команды</title>
+<style>
+:root {
+  --bg: #0b1220;
+  --bg2: #111c30;
+  --card: #15233b;
+  --card2: #1b2d4a;
+  --line: #2a4166;
+  --text: #e9f0fa;
+  --muted: #9db0c9;
+  --accent: #2f8fe0;
+  --accent2: #2fbf8a;
+  --ok: #2fbf8a;
+  --bad: #d4655c;
+  --gold: #e0b84c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: linear-gradient(160deg, #080e1a 0%, #10223a 100%);
+  background-attachment: fixed;
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+#app { max-width: 720px; margin: 0 auto; padding: 12px; }
+h1 { font-size: 1.7rem; margin: 0 0 8px; line-height: 1.2; }
+h2 { font-size: 1.25rem; margin: 0 0 12px; }
+p { margin: 0 0 12px; }
+.muted { color: var(--muted); }
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  margin-bottom: 14px;
+}
+.hero { text-align: center; }
+.hero .emoji { font-size: 3rem; }
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--card2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 18px;
+  min-height: 54px;
+  cursor: pointer;
+}
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:focus-visible, input:focus-visible {
+  outline: 3px solid #9fd0ff;
+  outline-offset: 2px;
+}
+.btn-primary { background: #1f6fb5; border-color: var(--accent); color: #fff; font-weight: 600; }
+.btn-primary:hover:not(:disabled) { background: var(--accent); }
+.btn-danger { border-color: var(--bad); color: #f3b8b3; }
+.stack { display: grid; gap: 10px; }
+input[type="text"] {
+  font: inherit;
+  width: 100%;
+  color: var(--text);
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  min-height: 54px;
+}
+.scorebar {
+  position: sticky; top: 0; z-index: 5;
+  background: linear-gradient(90deg, #14355c, #135e4a);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center; gap: 10px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+.scorebar .team { font-weight: 700; word-break: break-word; }
+.scorebar .pts { font-size: 1.5rem; font-weight: 800; white-space: nowrap; }
+.board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  min-height: 72px;
+  padding: 4px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  line-height: 1.1;
+}
+.cell .tiny { font-size: 0.7rem; font-weight: 600; margin-top: 2px; }
+.cell.done { border-color: #fff; }
+.cell .mark {
+  position: absolute; top: 4px; right: 6px; font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.45); border-radius: 999px; padding: 0 7px;
+}
+.cell:hover:not(:disabled) { border-color: #fff; }
+.question-title { color: var(--accent2); font-weight: 700; margin-bottom: 8px; }
+.question { font-size: 1.2rem; font-weight: 600; margin-bottom: 16px; }
+.options { display: grid; gap: 10px; margin-bottom: 16px; }
+.opt { display: flex; gap: 12px; align-items: flex-start; text-align: left; padding: 14px; }
+.opt .letter {
+  flex: 0 0 auto; width: 34px; height: 34px; border-radius: 9px;
+  background: var(--bg2); border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+.opt.picked { border-color: var(--gold); }
+.opt.correct { background: #17503f; border-color: var(--ok); }
+.opt.wrong { background: #4a2523; border-color: var(--bad); }
+.grade { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin-bottom: 14px; }
+.grade button { font-weight: 700; padding: 10px 6px; font-size: 0.95rem; }
+.grade button.active { background: #1f6fb5; border-color: var(--accent); color: #fff; }
+.grade button.active.g0 { background: #7a3330; border-color: var(--bad); }
+.explain {
+  margin: 0 0 14px; padding: 14px; border-radius: 12px;
+  background: var(--bg2); border-left: 4px solid var(--accent2);
+}
+.stats { display: grid; gap: 10px; grid-template-columns: repeat(3, 1fr); margin: 14px 0; }
+.stat { background: var(--bg2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; text-align: center; }
+.stat b { display: block; font-size: 1.7rem; }
+.big-score { font-size: 3rem; font-weight: 800; color: var(--accent2); text-align: center; }
+.phrase { text-align: center; font-size: 1.1rem; padding: 12px; border-radius: 12px; background: var(--bg2); border: 1px solid var(--line); }
+.modal-back {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.65);
+  display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 10;
+}
+.modal {
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+  max-width: 520px; width: 100%; max-height: 90vh; overflow: auto; padding: 20px;
+}
+.modal ul { padding-left: 20px; margin: 0 0 14px; }
+.modal li { margin-bottom: 6px; }
+@media (min-width: 560px) {
+  .board { grid-template-columns: repeat(6, 1fr); }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ===== База вопросов: по одному на каждую клетку игрового поля (1–17) =====
+const QUESTIONS = [
+  {
+    id: 1,
+    locationName: "Больница",
+    question: "Вы заболели и пришли в поликлинику по месту жительства. Что верно про полис ОМС (обязательное медицинское страхование)?",
+    options: [
+      "Он покрывает любые платные услуги по желанию пациента",
+      "Он гарантирует бесплатную помощь в рамках государственной программы, а платные услуги оплачиваются отдельно",
+      "Он нужен только пенсионерам",
+      "Его нужно оформлять заново при каждом обращении"
+    ],
+    correctIndex: 1,
+    explanation: "ОМС даёт право на бесплатную медпомощь по государственной программе. Расходы на платную медицину лучше заранее закладывать в бюджет или финансовый резерв."
+  },
+  {
+    id: 2,
+    locationName: "Мост",
+    question: "Вы хотите накопить на крупную цель, до которой несколько лет, и «перейти реку» без долгов. Что поможет больше всего?",
+    options: [
+      "Ждать, пока нужная сумма появится сама",
+      "Составить план с суммой и сроком и регулярно откладывать часть дохода",
+      "Брать микрозайм каждый месяц",
+      "Тратить всё сейчас, а копить потом"
+    ],
+    correctIndex: 1,
+    explanation: "Долгосрочная цель достигается планом: сумма, срок и регулярные отчисления. Дорогие займы на текущие траты уводят от цели."
+  },
+  {
+    id: 3,
+    locationName: "Дорога / Парковка",
+    question: "Вы покупаете автомобиль и выбираете страховку. Какое утверждение об ОСАГО и КАСКО верно?",
+    options: [
+      "ОСАГО добровольная, а КАСКО обязательная",
+      "Обе страховки обязательны",
+      "ОСАГО обязательна и возмещает вред другим участникам ДТП по вашей вине, КАСКО добровольная и защищает ваш автомобиль",
+      "Обе страховки нужны только для новых машин"
+    ],
+    correctIndex: 2,
+    explanation: "ОСАГО защищает чужое имущество и здоровье при вашей вине. КАСКО — добровольная защита вашего автомобиля от ущерба и угона."
+  },
+  {
+    id: 4,
+    locationName: "Мусорные контейнеры / ЖКХ",
+    question: "Счета за коммунальные услуги выросли. Что поможет снизить платежи?",
+    options: [
+      "Установить приборы учёта и экономнее расходовать воду и электричество",
+      "Не платить, пока не придёт предупреждение",
+      "Оплачивать только половину суммы",
+      "Менять управляющую компанию каждый месяц"
+    ],
+    correctIndex: 0,
+explanation: "При наличии счётчиков вы платите за реальное потребление, а экономия ресурсов напрямую снижает расходы. Неуплата ведёт к пени и долгам."
+  },
+  {
+    id: 5,
+    locationName: "Интернет-магазин",
+    question: "Вам пришло СМС: «Ваш заказ задержан, перейдите по ссылке и введите данные карты». Что делать?",
+    options: [
+      "Перейти по ссылке и ввести данные, чтобы заказ не пропал",
+      "Сообщить код из СМС, чтобы подтвердить личность",
+      "Переслать ссылку друзьям",
+      "Не переходить по ссылке и проверить заказ в официальном приложении или на сайте магазина"
+    ],
+    correctIndex: 3,
+    explanation: "Это типичный фишинг. Данные карты и коды из СМС нельзя вводить на сомнительных страницах, статус заказа проверяйте только в официальных источниках."
+  },
+  {
+    id: 6,
+    locationName: "Жилой дом",
+    question: "Вы выбираете: взять жильё в ипотеку или снимать. Что нужно учесть в первую очередь?",
+    options: [
+      "Только размер арендной платы",
+      "Сравнить ежемесячный платёж по ипотеке с процентами и сопутствующими расходами с арендой и оценить стабильность своего дохода",
+      "Что говорят знакомые",
+      "Ипотека всегда выгоднее аренды"
+    ],
+    correctIndex: 1,
+    explanation: "Ипотека — долгое обязательство. Нужно считать полную стоимость кредита, расходы на жильё и устойчивость дохода, а не полагаться на общие утверждения."
+  },
+  {
+    id: 7,
+    locationName: "Стройка",
+    question: "Вам предлагают купить квартиру на этапе котлована по сниженной цене. Какой риск нужно учитывать?",
+    options: [
+      "Задержка сроков сдачи или проблемы у застройщика, поэтому важно проверять документы и репутацию",
+      "Никаких рисков нет, цена обязательно вырастет",
+      "Риск только в цвете стен",
+      "Рисков нет, если пообещали менеджеры"
+    ],
+    correctIndex: 0,
+    explanation: "На раннем этапе стройки выше риск задержек и проблем застройщика. Проверка документов и надёжности компании снижает этот риск."
+  },
+  {
+    id: 8,
+    locationName: "Памятник",
+    question: "На памятнике выбита старая цена, и вы задумались, почему раньше всё стоило дешевле. Что такое инфляция?",
+    options: [
+      "Рост зарплат у всех граждан",
+      "Снижение налогов",
+      "Рост общего уровня цен, из-за которого на те же деньги можно купить меньше",
+      "Обмен одной валюты на другую"
+    ],
+    correctIndex: 2,
+    explanation: "При инфляции деньги теряют покупательную способность, поэтому накопления важно хотя бы сохранять от обесценивания."
+  },
+  {
+    id: 9,
+    locationName: "Аптека",
+    question: "Вы планируете расходы на здоровье. Что верно про лекарства и БАДы?",
+    options: [
+      "БАДы полностью заменяют лекарства",
+      "БАДы не являются лекарствами и не заменяют лечение, а лекарства принимают по назначению врача, поэтому часть бюджета стоит закладывать заранее",
+      "Любое лекарство можно купить на всю семью впрок",
+      "Назначение врача не нужно, если рекомендовали в рекламе"
+    ],
+    correctIndex: 1,
+    explanation: "БАД — это не лекарство. Расходы на здоровье лучше планировать заранее и опираться на рекомендации врача, а не рекламы."
+  },
+  {
+    id: 10,
+    locationName: "Банк (административное здание)",
+    question: "Вам позвонил «сотрудник службы безопасности банка» и просит назвать код из СМС, чтобы «защитить счёт». Что делать?",
+    options: [
+      "Прекратить разговор, ничего не называть и самому перезвонить в банк по официальному номеру",
+      "Назвать код, раз звонят из банка",
+      "Продиктовать номер карты, но не код",
+      "Перевести деньги на «безопасный счёт»"
+    ],
+    correctIndex: 0,
+    explanation: "Настоящий банк не просит коды из СМС и не требует переводов на «безопасные счета». Это приёмы мошенников."
+  },
+  {
+    id: 11,
+    locationName: "Магазин «Продукты»",
+    question: "Вы часто покупаете в магазине лишнее и выходите с тяжёлыми пакетами. Как снизить импульсивные покупки?",
+    options: [
+      "Ходить за покупками, когда очень голодно",
+"Брать товары только потому, что они по акции",
+      "Составить список заранее, придерживаться его и не ходить в магазин голодным",
+      "Покупать всё больше, чтобы получить скидку"
+    ],
+    correctIndex: 2,
+    explanation: "Список и планирование бюджета снижают импульсивные траты. Скидка на ненужный товар всё равно остаётся расходом."
+  },
+  {
+    id: 12,
+    locationName: "Деревенский дом",
+    question: "Семья ведёт подсобное хозяйство: огород и птицу. Как правильно оценить, выгодно ли оно?",
+    options: [
+      "Считать только выручку, а затраты не учитывать",
+      "Выгоду нельзя оценить в деньгах",
+      "Сравнить стоимость продукции, которую не пришлось покупать или удалось продать, с затратами на семена, корм, инструменты и время",
+      "Достаточно ориентироваться на ощущение"
+    ],
+    correctIndex: 2,
+    explanation: "Натуральное хозяйство экономит бюджет, но чтобы понять реальную выгоду, нужно учитывать и затраты, включая время."
+  },
+  {
+    id: 13,
+    locationName: "Колледж",
+    question: "Вы учитесь на платной основе. Что полезно выяснить о расходах на обучение?",
+    options: [
+      "Только цену первого года",
+      "Условия договора и стоимость по годам, а также возможность получить социальный налоговый вычет на обучение при наличии налогооблагаемого дохода",
+      "Что вернуть деньги нельзя никогда",
+      "Ничего, об этом думают после выпуска"
+    ],
+    correctIndex: 1,
+    explanation: "Платное обучение нужно планировать: смотреть договор и полную стоимость. Часть расходов можно вернуть через налоговый вычет, если есть доход, с которого уплачен налог."
+  },
+  {
+    id: 14,
+    locationName: "Магазин одежды",
+    question: "В магазине большая распродажа, но нужной вещи в вашем списке нет. Как разумнее поступить?",
+    options: [
+      "Купить побольше, раз так дёшево",
+      "Взять вещь в кредит, чтобы не упустить скидку",
+      "Оформить кредитную карту ради скидки",
+      "Спросить себя, нужна ли вещь, и купить только запланированное: скидка на ненужное — всё равно трата"
+    ],
+    correctIndex: 3,
+    explanation: "Распродажа выгодна только на то, что вы всё равно собирались покупать. Кредитные карты и займы ради скидок увеличивают расходы."
+  },
+  {
+    id: 15,
+    locationName: "Кафе / Столовая",
+    question: "Вы часто обедаете вне дома, и расходы на еду растут. Что поможет сэкономить?",
+    options: [
+      "Заказывать доставку каждый день",
+      "Брать еду из дома, выбирать комплексные обеды и сравнивать цены",
+      "Отказаться от еды днём",
+      "Всегда выбирать самое дорогое блюдо"
+    ],
+    correctIndex: 1,
+    explanation: "Домашние обеды, комплексные наборы и сравнение цен заметно снижают траты на питание вне дома."
+  },
+  {
+    id: 16,
+    locationName: "Автомобили",
+    question: "Вы подсчитываете, во сколько обходится владение автомобилем. Что входит в расходы?",
+    options: [
+      "Только бензин",
+      "Только страховка",
+      "Налог, топливо, страховка, обслуживание, а также амортизация — потеря стоимости автомобиля со временем",
+      "Только покупка, дальше расходов нет"
+    ],
+    correctIndex: 2,
+    explanation: "Содержание автомобиля — это регулярные платежи и амортизация. Учитывая всё, можно честно оценить, по карману ли он."
+  },
+  {
+    id: 17,
+    locationName: "Магазин / Киоск",
+    question: "Вы каждый день покупаете небольшие вещи у киоска: напиток, снек, мелочи. Почему это опасно для бюджета?",
+    options: [
+      "Мелкие траты незаметно складываются в существенную сумму за месяц",
+      "Мелкие покупки нельзя совершать по закону",
+      "Они всегда дороже крупных",
+      "Они не влияют на бюджет"
+    ],
+    correctIndex: 0,
+    explanation: "Небольшие ежедневные покупки «съедают» бюджет незаметно. Учёт расходов помогает увидеть эту сумму."
+  }
+];
+
+const STORAGE_KEY = "finance-pult-save-v1";
+const LETTERS = ["A", "B", "C", "D"];
+const GRADES = { 2: "Верно (+2)", 1: "Неточный ответ (+1)", 0: "Неверно (+0)" };
+
+// ===== Состояние =====
+// history: номер клетки -> { points, picked }
+let state = defaultState();
+let showRules = false;
+
+function defaultState() {
+  return { screen: "start", team: "", history: {}, cell: null, revealed: false, picked: null };
+}
+
+// ===== localStorage =====
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (data && typeof data === "object") state = Object.assign(defaultState(), data);
+  } catch (e) {
+    state = defaultState();
+  }
+}
+
+// ===== Подсчёт баллов =====
+function totalScore() {
+  let sum = 0;
+  for (const id in state.history) sum += state.history[id].points;
+  return sum;
+}
+
+function countGrade(points) {
+  let n = 0;
+  for (const id in state.history) if (state.history[id].points === points) n += 1;
+  return n;
+}
+
+function answeredCount() {
+  return Object.keys(state.history).length;
+}
+
+// Оценка ведущего. Повторное нажатие той же оценки снимает её, другая оценка заменяет прежнюю
+function setGrade(points) {
+  const id = state.cell;
+  const cur = state.history[id];
+  if (cur && cur.points === points) {
+    delete state.history[id];
+  } else {
+    state.history[id] = { points: points };
+  }
+  save();
+  render();
+}
+
+function motivation() {
+  const n = answeredCount();
+  if (n === 0) return "Вы пока не ответили ни на один вопрос. Начните путешествие заново!";
+  const ratio = totalScore() / (n * 2);
+  if (ratio >= 0.85) return "Блестяще! Вы настоящие финансовые эксперты и уверенно идёте к независимости.";
+  if (ratio >= 0.6) return "Отличный результат! Вы хорошо разбираетесь в финансах, осталось отточить детали.";
+  if (ratio >= 0.35) return "Неплохо! База есть, а над некоторыми темами стоит ещё поработать.";
+  return "Это только начало пути. Повторите правила финансовой грамотности и сыграйте ещё раз!";
+}
+
+// ===== Действия =====
+function esc(str) {
+  return String(str).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function startGame() {
+  const input = document.getElementById("team-input");
+  const name = input.value.trim();
+  if (!name) {
+    input.focus();
+    return;
+  }
+  state = defaultState();
+  state.team = name.slice(0, 30);
+  state.screen = "board";
+  save();
+  render();
+}
+
+function openCell(id) {
+  state.cell = id;
+  state.revealed = false;
+  state.picked = null;
+  state.screen = "question";
+  save();
+  render();
+  window.scrollTo(0, 0);
+}
+
+function pickOption(i) {
+  state.picked = state.picked === i ? null : i;
+  save();
+  render();
+}
+
+function revealAnswer() {
+  state.revealed = true;
+  save();
+  render();
+}
+
+function backToBoard() {
+  state.screen = "board";
+  state.cell = null;
+  state.revealed = false;
+  state.picked = null;
+  save();
+  render();
+  window.scrollTo(0, 0);
+}
+
+function finishGame() {
+  if (!confirm("Завершить игру и перейти к итогам?")) return;
+  state.screen = "results";
+  state.cell = null;
+  save();
+  render();
+  window.scrollTo(0, 0);
+}
+
+function playAgain() {
+  const team = state.team;
+  state = defaultState();
+  state.team = team;
+  state.screen = "board";
+  save();
+  render();
+}
+
+function newTeam() {
+  state = defaultState();
+  save();
+  render();
+}
+
+// ===== Рендер =====
+function render() {
+  const app = document.getElementById("app");
+  if (state.screen === "board") app.innerHTML = renderScorebar() + renderBoard();
+  else if (state.screen === "question") app.innerHTML = renderScorebar() + renderQuestion();
+  else if (state.screen === "results") app.innerHTML = renderResults();
+  else app.innerHTML = renderStart();
+  if (showRules) app.insertAdjacentHTML("beforeend", renderRules());
+}
+
+function renderScorebar() {
+  return '<div class="scorebar"><span class="team">Команда «' + esc(state.team) + '»</span>' +
+    '<span class="pts">' + totalScore() + ' очк.</span></div>';
+}
+
+function renderStart() {
+  return '' +
+'<div class="card hero">' +
+      '<div class="emoji">🧭💰</div>' +
+      '<h1>Путешествие в страну финансовой независимости</h1>' +
+      '<p class="muted">Пульт команды: выбирайте клетку, на которую попала ваша фишка, отвечайте на вопрос и набирайте очки.</p>' +
+    '</div>' +
+    '<form class="card stack" data-form="start">' +
+      '<label for="team-input"><b>Введите название команды</b></label>' +
+      '<input type="text" id="team-input" maxlength="30" placeholder="Например, Брокеры" value="' + esc(state.team) + '">' +
+      '<button type="submit" class="btn-primary">Начать игру</button>' +
+      '<button type="button" data-action="rules">Правила</button>' +
+    '</form>';
+}
+
+function renderRules() {
+  return '' +
+    '<div class="modal-back" data-action="close-rules">' +
+      '<div class="modal" role="dialog" aria-modal="true" aria-label="Правила">' +
+        '<h2>Правила</h2>' +
+        '<ul>' +
+          '<li>Бросайте кубик и ходите по клеткам на плакате (номера от 1 до 17).</li>' +
+          '<li>Нажмите в пульте номер клетки, на которой оказалась фишка, и ответьте на вопрос.</li>' +
+          '<li>Ведущий оценивает ответ вручную: <b>2</b> очка за верный ответ, <b>1</b> очко за неточный или частично верный, <b>0</b> за неверный.</li>' +
+          '<li>Выбор варианта в пульте не показывает правильный ответ сразу. Его можно открыть кнопкой после обсуждения.</li>' +
+          '<li>Оценку можно исправить: очки не удвоятся, а заменятся.</li>' +
+          '<li>Когда игра закончится, нажмите «Завершить игру», чтобы увидеть итог.</li>' +
+        '</ul>' +
+        '<button class="btn-primary" data-action="close-rules-btn" style="width:100%">Понятно</button>' +
+      '</div>' +
+    '</div>';
+}
+
+// Сетка клеток 1–17: каждая клетка своего цвета, пройденные помечаются очками
+function renderBoard() {
+  const cells = QUESTIONS.map((q, idx) => {
+    const h = state.history[q.id];
+    const hue = Math.round((idx * 360) / QUESTIONS.length);
+    const bg = "linear-gradient(145deg, hsl(" + hue + ", 60%, 38%), hsl(" + ((hue + 30) % 360) + ", 62%, 30%))";
+    return '<button class="cell' + (h ? ' done' : '') + '" style="background:' + bg + '" data-action="cell" data-id="' + q.id + '" aria-label="Клетка ' + q.id + ', ' + esc(q.locationName) + (h ? ', набрано очков: ' + h.points : '') + '">' +
+      (h ? '<span class="mark">+' + h.points + '</span>' : '') +
+      q.id +
+    '</button>';
+  }).join("");
+  return '' +
+    '<div class="card">' +
+      '<h2>Выберите клетку</h2>' +
+      '<p class="muted">Нажмите номер, на котором стоит ваша фишка. Пройдено клеток: ' + answeredCount() + ' из ' + QUESTIONS.length + '.</p>' +
+      '<div class="board">' + cells + '</div>' +
+    '</div>' +
+    '<div class="stack">' +
+      '<button class="btn-danger" data-action="finish">Завершить игру</button>' +
+      '<button data-action="rules">Правила</button>' +
+    '</div>';
+}
+
+function renderQuestion() {
+  const q = QUESTIONS.find(x => x.id === state.cell);
+  const saved = state.history[q.id];
+  const opts = q.options.map((text, i) => {
+    let cls = "opt";
+    if (state.revealed) cls += i === q.correctIndex ? " correct" : " wrong";
+    else if (state.picked === i) cls += " picked";
+    return '<button class="' + cls + '" data-action="pick" data-i="' + i + '" aria-pressed="' + (state.picked === i) + '">' +
+      '<span class="letter">' + LETTERS[i] + '</span><span>' + esc(text) + '</span></button>';
+  }).join("");
+
+  const grade = [2, 1, 0].map(p =>
+    '<button class="g' + p + (saved && saved.points === p ? ' active' : '') + '" data-action="grade" data-pts="' + p + '" aria-pressed="' + (!!saved && saved.points === p) + '">' + GRADES[p] + '</button>'
+  ).join("");
+
+  const explain = state.revealed
+    ? '<div class="explain"><b>Правильный ответ: ' + LETTERS[q.correctIndex] + '.</b> ' + esc(q.explanation) + '</div>'
+    : '';
+
+  return '' +
+    '<div class="card">' +
+'<div class="question-title">Клетка №' + q.id + ': ' + esc(q.locationName) + '</div>' +
+      '<div class="question">' + esc(q.question) + '</div>' +
+      '<div class="options">' + opts + '</div>' +
+      '<h2>Оценка ведущего</h2>' +
+      '<div class="grade">' + grade + '</div>' +
+      explain +
+      '<div class="stack">' +
+        '<button data-action="reveal"' + (state.revealed ? ' disabled' : '') + '>Показать правильный ответ и пояснение</button>' +
+        '<button class="btn-primary" data-action="back">Вернуться к выбору клетки</button>' +
+      '</div>' +
+    '</div>' +
+    '<button class="btn-danger" style="width:100%" data-action="finish">Завершить игру</button>';
+}
+
+function renderResults() {
+  return '' +
+    '<div class="card">' +
+      '<h1 style="text-align:center">Итоги</h1>' +
+      '<p class="muted" style="text-align:center">Команда «' + esc(state.team) + '»</p>' +
+      '<div class="big-score">' + totalScore() + '</div>' +
+      '<p class="muted" style="text-align:center">очков, пройдено вопросов: ' + answeredCount() + ' из ' + QUESTIONS.length + '</p>' +
+      '<div class="stats">' +
+        '<div class="stat"><b>' + countGrade(2) + '</b>Верно (+2)</div>' +
+        '<div class="stat"><b>' + countGrade(1) + '</b>Неточных (+1)</div>' +
+        '<div class="stat"><b>' + countGrade(0) + '</b>Неверных (0)</div>' +
+      '</div>' +
+      '<div class="phrase">' + motivation() + '</div>' +
+    '</div>' +
+    '<div class="stack">' +
+      '<button class="btn-primary" data-action="again">Сыграть ещё раз</button>' +
+      '<button data-action="new">Новая команда</button>' +
+    '</div>';
+}
+
+// ===== Обработка событий =====
+document.addEventListener("click", function (e) {
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  const a = el.dataset.action;
+  if (a === "close-rules") {
+    if (e.target === el) { showRules = false; render(); }
+    return;
+  }
+  switch (a) {
+    case "rules": showRules = true; render(); break;
+    case "close-rules-btn": showRules = false; render(); break;
+    case "cell": openCell(Number(el.dataset.id)); break;
+    case "pick": pickOption(Number(el.dataset.i)); break;
+    case "grade": setGrade(Number(el.dataset.pts)); break;
+    case "reveal": revealAnswer(); break;
+    case "back": backToBoard(); break;
+    case "finish": finishGame(); break;
+    case "again": playAgain(); break;
+    case "new": newTeam(); break;
+  }
+});
+
+document.addEventListener("submit", function (e) {
+  if (e.target.dataset.form === "start") {
+    e.preventDefault();
+    startGame();
+  }
+});
+
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape" && showRules) {
+    showRules = false;
+    render();
+  }
+});
+
+// ===== Инициализация =====
+load();
+render();
+</script>
+</body>
+</html>
